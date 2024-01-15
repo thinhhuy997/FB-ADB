@@ -8,6 +8,7 @@ except:
 import threading,subprocess,base64,cv2,random
 import numpy as np
 from datetime import datetime
+import traceback
 # from com.dtmilano.android.viewclient import ViewClient
 
 
@@ -57,7 +58,8 @@ class EmulatorWorker(threading.Thread):
         self.device = device_name
         self.proxy = proxy
 
-    def config_proxy(self, adb_auto: Auto, locating_img_path: str) -> bool:
+    def config_proxy(self, adb_auto: Auto) -> bool:
+        locating_img_path = "./images/proxy-app-1.png"
         proxy = self.proxy.split(":")
         print("Đang tiến hành config proxy:", proxy)
 
@@ -116,34 +118,45 @@ class EmulatorWorker(threading.Thread):
                         adb_auto.click(point_5[0][0]+348, point_5[0][1])
                         # adb_auto.click(point_5[0][0]+348, point_5[0][1])
                         adb_auto.sendText(proxy[3])
-                        time.sleep(1)
-                    if point_6 > [(0,0)]:
-                        adb_auto.click(point_6[0][0], point_6[0][1])
-                        point_7 = adb_auto.find("./images/start-proxy-service.png")
-                        if point_7 > [(0,0)]:
-                            adb_auto.click(point_7[0][0], point_7[0][1])
-                            
-                            p9_start_time = time.time()
-                            while time.time() - p9_start_time < 20:
-                                point_9 = adb_auto.find("./images/start-proxy-service-2.png")
-                                if point_9 > [(0, 0)]:
-                                    adb_auto.click(point_9[0][0], point_9[0][1])
-                                    time.sleep(2)
-                                else:
-                                    time.sleep(0.5)
+                    
+                    start_check_time = time.time()
+                    while time.time() - start_check_time < 30:
+                        if point_6 > [(0,0)]:
+                            adb_auto.click(point_6[0][0], point_6[0][1])
+                            point_7 = adb_auto.find("./images/start-proxy-service.png")
+                            if point_7 > [(0,0)]:
+                                adb_auto.click(point_7[0][0], point_7[0][1])
+                                
+                                # time.sleep(0.5)
+                                # # Oke button
+                                # point_8 = adb_auto.find("./images/proxy-confirm-ok-2.png")
+                                # if point_8 > [(0, 0)]:
+                                #     adb_auto.click(point_8[0][0], point_8[0][1])
 
-                            p10_start_time = time.time()
-                            while time.time() - p10_start_time < 30:
-                                point_10 = adb_auto.find("./images/proxy-config-success.png")
-                                print(point_10)
-                                if point_10 > [(0, 0)]:
-                                    print(f'Config proxy "{self.proxy}" thành công')
-                                    return True
-                                else:
-                                    time.sleep(0.5)
+                                p9_start_time = time.time()
+                                while time.time() - p9_start_time < 20:
+                                    point_9 = adb_auto.find("./images/start-proxy-service-2.png")
+                                    if point_9 > [(0, 0)]:
+                                        adb_auto.click(point_9[0][0], point_9[0][1])
+                                        time.sleep(2)
+                                    else:
+                                        time.sleep(0.5)
+
+                                p10_start_time = time.time()
+                                while time.time() - p10_start_time < 30:
+                                    point_10 = adb_auto.find("./images/proxy-config-success.png")
+                                    print(point_10)
+                                    if point_10 > [(0, 0)]:
+                                        print(f'Config proxy "{self.proxy}" thành công')
+                                        return True
+                                    else:
+                                        time.sleep(0.5)
+                        else:
+                            time.sleep(0.5)
                 return False
             except Exception as err:
                 print("Lỗi khi config proxy:", err)
+                traceback.print_exc()
                 return False
 
 
@@ -158,78 +171,27 @@ class EmulatorWorker(threading.Thread):
                 print("Err", e)
 
 
-    def searchLiveStream(self, adb_auto: Auto, search_img_path: str, page_name: str, live_tag_img_path_1: str, live_tag_img_path_2: str) -> bool:
-        while True:
-            try:
-                img_point = adb_auto.find(search_img_path)
-                print('img_point', img_point)
-                print(search_img_path)
-                if img_point > [(0,0)]:
-                    adb_auto.click(img_point[0][0], img_point[0][1])
-
-                    time.sleep(2)
-                    adb_auto.sendText(page_name)
-                    adb_auto.enter()
-
-                    time.sleep(2)
-                    live_img_point_1 = adb_auto.find(live_tag_img_path_1)
-                    live_img_point_2 = adb_auto.find(live_tag_img_path_2)
-                    print('live_img_point_1', live_img_point_1)
-                    print('live_img_point_2', live_img_point_2)
-
-                    # Because There are 2 live-image tags, need to check twice
-                    if live_img_point_1 > [(0, 0)]:
-                        adb_auto.click(live_img_point_1[0][0], live_img_point_1[0][1])
-                        return True # Search livestream successfully!
-                    if live_img_point_2 > [(0, 0)]:
-                        adb_auto.click(live_img_point_2[0][0], live_img_point_2[0][1])
-                        return True # Search livestream successfully!
-
-            except Exception as e:
-                print(e)
-                return False
-            
-            return False
-        
-    def interactLiveStream(self, adb_auto: Auto, captcha_img_path: str) -> None:
-
-        device, serialno = ViewClient.connectToDeviceOrExit()
-        device.takeSnapshot().crop((100, 50, 500, 600)).save('./myscreencap.png', 'PNG')
-
-
-        # count = 0
-        # while True:
-        #     captcha_img_point = adb_auto.find(captcha_img_path)
-        #     if captcha_img_point > [(0, 0)]:
-        #         print(f'Captcha xuất hiện khi count = {count}')
-        #     count+=1
-
-
-            
-
-        #     # Check captcha appear every 10 seconds
-        #     time.sleep(10)
-
     def run(self):
         try:
             adb_auto = Auto(self.device)
-
-            proxy_app_path = "./images/proxy-app-1.png"
+            # fb_img_path = 
 
             print('--------------------')
             print(f"Device {self.device} started")
-            for i in range(2):
+            for i in range(1):
                 # Config proxy for the emulator
-                proxy_config_check = self.config_proxy(adb_auto, proxy_app_path)
+                proxy_config_check = self.config_proxy(adb_auto)
+
+
+                if proxy_config_check:
+                    self.startApp(adb_auto, )
+
+
                 print('proxy_config_check', proxy_config_check)
                 adb_auto.offApp("com.android.browser")
                 adb_auto.clearApp("com.cell47.College_Proxy")
                 time.sleep(3)
                 
-
-
-            
-
         except Exception as e:
             print(e)
     
