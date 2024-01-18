@@ -1,30 +1,41 @@
-from PIL import Image
-import subprocess
+import sys
+from PyQt5.QtWidgets import QApplication, QMainWindow, QAction, QMenu
 
-def take_screenshot(device_id=None, output_file="screenshot.png"):
-    adb_command = "adb exec-out screencap -p > screenshot.png"
-    
-    subprocess.run(adb_command, shell=True)
+class MyWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
 
+        self.initUI()
 
-def crop_image(input_image_path, output_image_path, x, y, width, height):
-    # Open the image
-    img = Image.open(input_image_path)
+    def initUI(self):
+        menubar = self.menuBar()
 
-    # Crop the image using the specified coordinates
-    cropped_img = img.crop((x, y, x + width, y + height))
+        file_menu = menubar.addMenu('File')
 
-    # Save the cropped image
-    cropped_img.save(output_image_path)
+        # Creating a simple action for the main menu
+        new_action = QAction('New', self)
+        file_menu.addAction(new_action)
 
-# Example usage
-input_image_path = "screenshot.png"  # Replace with the path to your input image
-output_image_path = "cropped_image.png"  # Replace with the desired output path
-x = 141 + 2  # X-coordinate of the top-left corner
-y = 697  # Y-coordinate of the top-left corner
-width = 939 - 141 - 4  # Width of the cropped region
-height = 1195 - 697 - 2  # Height of the cropped region
-# [141,697][939,1195]
+        # Creating a submenu under the "File" menu
+        sub_menu = QMenu('Open Recent', self)
 
-take_screenshot()
-crop_image(input_image_path, output_image_path, x, y, width, height)
+        # Adding actions to the submenu
+        sub_menu.addAction('File 1')
+        sub_menu.addAction('File 2')
+        sub_menu.addAction('File 3')
+
+        # Adding the submenu to the "File" menu
+        file_menu.addMenu(sub_menu)
+
+        # Setting up the main window
+        self.setGeometry(300, 300, 300, 200)
+        self.setWindowTitle('Menu with Submenu Example')
+
+def main():
+    app = QApplication(sys.argv)
+    window = MyWindow()
+    window.show()
+    sys.exit(app.exec_())
+
+if __name__ == '__main__':
+    main()
